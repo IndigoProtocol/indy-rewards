@@ -1,0 +1,9 @@
+[tool.black]
+target-version = ["py310", "py311"]
+
+[tool.isort]
+profile = "black"
+
+[tool.docformatter]
+in-place = true
+black = true

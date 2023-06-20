@@ -1,0 +1,38 @@
+[
+    {
+        "hash": "e0e628011b9ac3fe800ec5f7230b7df9242fa6f1ccb666a70f1117663673f073",
+        "slot": 81733676,
+        "output_hash": "6bdc4e0d63df2fcd3047c6238c36dc196e9fb097364a22c896f0d3b0968a1874",
+        "output_index": 0,
+        "asset": "iUSD",
+        "price": 3187291,
+        "expiration": 1673302942000,
+        "address": "addr1wygyy4mdrh5kxsmm6ja4phxez3vh2mngz2muqmw4gw3n9jqdu67a0",
+        "created_at": "2023-01-09T21:32:47.000000Z",
+        "updated_at": "2023-01-09T21:32:47.000000Z"
+    },
+    {
+        "hash": "9cd5e806bdde1fc50d1b7248cbb805838754ea9320aaf4aae71d2bb63e838347",
+        "slot": 81733871,
+        "output_hash": "2ceeb1c4dd4cd725d0b21fa518f125c70d74ad095e29c5b8be812b3eb4937b00",
+        "output_index": 0,
+        "asset": "iBTC",
+        "price": 54815968509,
+        "expiration": 1673303119000,
+        "address": "addr1w8f845ld0vrnqxx598jhctudrafygk4zg83gpek6zjdfrdq6le7ag",
+        "created_at": "2023-01-09T21:36:02.000000Z",
+        "updated_at": "2023-01-09T21:36:02.000000Z"
+    },
+    {
+        "hash": "8c42efd06d31bdd4d72430167253fd59d4424587062bce8405b662a205610983",
+        "slot": 81733871,
+        "output_hash": "36745393702677e32e886883514c0984483b5c286397059fa43026511430684a",
+        "output_index": 0,
+        "asset": "iETH",
+        "price": 4201510492,
+        "expiration": 1673303119000,
+        "address": "addr1w8e4qdgv6sxsmr58gnevdjk4fg9te8237yrl2laetsvp50c7c0grw",
+        "created_at": "2023-01-09T21:36:02.000000Z",
+        "updated_at": "2023-01-09T21:36:02.000000Z"
+    }
+]

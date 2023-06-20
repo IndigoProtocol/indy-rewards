@@ -1,0 +1,14 @@
+black == 23.*
+docformatter[tomli] == 1.*
+flake8 == 6.*
+isort == 5.*
+mypy == 1.*
+pandas-stubs == 2.0.*
+pre-commit == 3.*
+pytest-mock == 3.*
+pytest == 7.*
+pytest-cov == 4.*
+requests-mock == 1.*
+types-requests == 2.*
+types-setuptools == 67.*
+types-jsonschema == 4.*
