@@ -20,8 +20,8 @@ def get_rewards_per_staker(
 ) -> list[IndividualReward]:
     snapshot_timestamp = time_utils.get_snapshot_unix_time(day)
     all_accounts = analytics_api.raw.rewards_stability_pool(snapshot_timestamp)
-    _check_no_duplicate_accounts(all_accounts)
     eligible_accounts = [x for x in all_accounts if _is_at_least_24h_old(x, day)]
+    eligible_accounts = _merge_duplicate_accounts(eligible_accounts)
     iassets_with_stakers = _get_unique_iassets(eligible_accounts)
 
     rewards_per_pool = get_rewards_per_pool(day, epoch_indy, iassets_with_stakers)
@@ -236,14 +236,25 @@ def _check_each_iasset_has_stakers(
             )
 
 
-def _check_no_duplicate_accounts(account_balances: list[dict]) -> None:
-    seen = {}
-    for x in account_balances:
-        key = (x["owner"], x["asset"])
-        if key in seen:
-            raise Exception(f"Duplicate SP account for {x['owner']} and {x['asset']}")
+def _merge_duplicate_accounts(account_balances: list[dict]) -> list[dict]:
+    merged_accounts: dict[tuple[str, str], dict] = {}
+    for account in account_balances:
+        key = (account["owner"], account["asset"])
+        if key in merged_accounts:
+            merged_accounts[key]["iasset_staked"] += account["iasset_staked"]
         else:
-            seen[key] = x["iasset_staked"]
+            # Remove "opened_at" because it'd be ambiguous.
+            new_account = {k: v for k, v in account.items() if k != "opened_at"}
+            merged_accounts[key] = new_account
+
+    return [
+        {
+            "owner": key[0],
+            "asset": key[1],
+            "iasset_staked": value["iasset_staked"],
+        }
+        for key, value in merged_accounts.items()
+    ]
 
 
 def _check_each_account_has_reward(
