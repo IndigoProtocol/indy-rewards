@@ -33,9 +33,11 @@ def get_epoch_all_rewards(
     """
     gov_rewards = gov.get_epoch_rewards_per_staker(epoch, gov_indy)
     sp_rewards = sp.get_epoch_rewards_per_staker(epoch, sp_indy)
-    lp_rewards = lp.get_epoch_rewards_per_staker(epoch, lp_indy)
 
-    all_rewards = sp_rewards + lp_rewards + gov_rewards
+    all_rewards = sp_rewards + gov_rewards
+
+    if epoch < 422:
+        all_rewards += lp.get_epoch_rewards_per_staker(epoch, lp_indy)
 
     return all_rewards
 
@@ -54,7 +56,8 @@ def get_day_all_rewards(
         rewards += gov.get_epoch_rewards_per_staker(epoch, gov_indy_per_epoch)
 
     rewards += sp.get_rewards_per_staker(day, sp_indy_per_epoch)
-    rewards += lp.get_rewards_per_staker(day, lp_indy_per_epoch)
+    if day <= datetime.date(2023, 7, 4):
+        rewards += lp.get_rewards_per_staker(day, lp_indy_per_epoch)
 
     return rewards
 

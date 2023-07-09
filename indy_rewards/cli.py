@@ -79,6 +79,7 @@ def validate_epoch_or_date_arg(ctx, param, value):
 @epoch_or_date_arg
 def lp(indy: float, pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
     """Print or save liquidity pool token staking rewards."""
+    _error_on_lp_moved_to_dex(epoch_or_date)
     if isinstance(epoch_or_date, int):
         rewards = lp_module.get_epoch_rewards_per_staker(epoch_or_date, indy)
     else:
@@ -103,6 +104,8 @@ def lp_apr(indy: float, epoch_or_date: int | datetime.date):
             dexes_sorted = sorted(aprs_by_iasset[iasset].keys(), key=lambda x: x.name)
             for dex in dexes_sorted:
                 click.echo(f"{dex.name}: {aprs_by_iasset[iasset][dex] * 100:.2f}%")
+
+    _error_on_lp_moved_to_dex(epoch_or_date)
 
     if isinstance(epoch_or_date, int):
         epoch = epoch_or_date
@@ -350,3 +353,13 @@ def _error_on_future(epoch_or_date: int | datetime.date):
                 f"{get_snap_str(day)}\n\n"
                 "Plus up to 45 minutes until results appear on the API."
             )
+
+
+def _error_on_lp_moved_to_dex(epoch_or_date: int | datetime.date):
+    if (isinstance(epoch_or_date, int) and epoch_or_date > 421) or (
+        isinstance(epoch_or_date, datetime.date)
+        and epoch_or_date > datetime.date(2023, 7, 4)
+    ):
+        raise click.BadArgumentUsage(
+            "LP reward distribution moved to dexes starting 2023 July 5th."
+        )
