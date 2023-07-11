@@ -51,6 +51,15 @@ def get_iassets_daily_indy(day: datetime.date, epoch_indy: float) -> list[IAsset
     return [IAssetReward(iasset=k, indy=v, day=day) for k, v in iasset_indy.items()]
 
 
+def get_pool_rewards(
+    day: datetime.date, epoch_indy: float
+) -> list[LiquidityPoolReward]:
+    lp_daily_status = analytics_api.get_lp_status(day)
+    iassets_indy = get_iassets_daily_indy(day, epoch_indy)
+    pool_rewards = distribute_to_liquidity_pools(iassets_indy, lp_daily_status, day)
+    return pool_rewards
+
+
 def distribute_to_accounts(
     day: datetime.date, iassets_daily_rewards: list[IAssetReward]
 ) -> list[IndividualReward]:

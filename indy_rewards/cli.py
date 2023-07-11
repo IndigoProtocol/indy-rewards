@@ -12,7 +12,13 @@ from indy_rewards import lp as lp_module
 from indy_rewards import polygon_api
 from indy_rewards import sp as sp_module
 from indy_rewards import summary, time_utils, volatility
-from indy_rewards.models import Dex, IAsset, IndividualReward, LiquidityPool
+from indy_rewards.models import (
+    Dex,
+    IAsset,
+    IndividualReward,
+    LiquidityPool,
+    LiquidityPoolReward,
+)
 
 
 @click.group()
@@ -141,20 +147,18 @@ def lp_summary(indy: float, start_date: datetime.datetime, end_date: datetime.da
     if start > end:
         raise click.BadArgumentUsage("Start date can't be after the end.")
 
-    rewards: list[IndividualReward] = []
+    delta = end - start
+    total_days = delta.days + 1
+    click.echo(f"Number of days: {total_days}")
+
+    rewards: list[LiquidityPoolReward] = []
 
     day: datetime.date = start
     while day <= end:
-        rewards += lp_module.get_rewards_per_staker(day, indy)
+        rewards += lp_module.get_pool_rewards(day, indy)
         day += datetime.timedelta(days=1)
 
-    df = summary.get_summary(rewards, False)
-
-    rewards_sorted_by_dex = df.sort_values(
-        by="Purpose", key=lambda col: col.apply(lambda x: x.rsplit(" ", 1)[-1])
-    )
-
-    _output(rewards_sorted_by_dex)
+    _print_dex_rewards_grouped(rewards)
 
 
 @rewards.command()
@@ -402,3 +406,26 @@ def _error_on_lp_moved_to_dex(epoch_or_date: int | datetime.date):
         raise click.BadArgumentUsage(
             "LP reward distribution moved to dexes starting 2023 July 5th."
         )
+
+
+def _sum_lp_rewards(rewards: list[LiquidityPoolReward]) -> dict[LiquidityPool, float]:
+    indy_by_lp: dict[LiquidityPool, float] = defaultdict(float)
+    for r in rewards:
+        indy_by_lp[r.lp] += r.indy
+    return indy_by_lp
+
+
+def _print_dex_rewards_grouped(rewards: list[LiquidityPoolReward]):
+    summed_rewards = _sum_lp_rewards(rewards)
+
+    dex_groups = defaultdict(list)
+    for lp, indy in summed_rewards.items():
+        dex_groups[lp.dex].append((lp, indy))
+
+    for dex in sorted(dex_groups.keys(), key=lambda x: x.name):
+        lp_totals = dex_groups[dex]
+        lp_totals_sorted = sorted(lp_totals, key=lambda x: x[0].iasset.name)
+        dex_total = sum(total for _, total in lp_totals_sorted)
+        click.echo(f"\n{dex} (Total: {dex_total:.6f}):\n")
+        for lp, indy in lp_totals_sorted:
+            click.echo(f"- {lp.dex} {lp.iasset}/{lp.other_asset_name}: {indy:.6f}")

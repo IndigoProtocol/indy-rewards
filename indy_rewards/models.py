@@ -27,6 +27,9 @@ class IAsset(Enum):
                 return member
         raise ValueError(f"Invalid IAsset: {name}")
 
+    def __str__(self):
+        return self.name
+
     def __repr__(self):
         return f"IAsset({self.name})"
 
@@ -42,6 +45,9 @@ class Dex(Enum):
             if member.name.lower() == name.lower():
                 return member
         raise ValueError(f"No Dex matching '{name}'")
+
+    def __str__(self):
+        return self.name
 
     def __repr__(self):
         return f"Dex({self.name})"
