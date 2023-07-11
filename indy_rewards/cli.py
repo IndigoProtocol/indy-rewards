@@ -119,6 +119,45 @@ def lp_apr(indy: float, epoch_or_date: int | datetime.date):
 
 
 @rewards.command()
+@indy_option(config.LP_EPOCH_INDY)
+@click.argument(
+    "start_date", type=click.DateTime(formats=["%Y-%m-%d"]), metavar="START_DATE"
+)
+@click.argument(
+    "end_date", type=click.DateTime(formats=["%Y-%m-%d"]), metavar="END_DATE"
+)
+def lp_summary(indy: float, start_date: datetime.datetime, end_date: datetime.datetime):
+    """Print LP summaries between two dates.
+
+    START_DATE: Range start UTC date (inclusive), e.g. 2023-06-27.
+
+    END_DATE: Range end UTC date (inclusive).
+    """
+    start = start_date.date()
+    end = end_date.date()
+    _error_on_future(start)
+    _error_on_future(end)
+
+    if start > end:
+        raise click.BadArgumentUsage("Start date can't be after the end.")
+
+    rewards: list[IndividualReward] = []
+
+    day: datetime.date = start
+    while day <= end:
+        rewards += lp_module.get_rewards_per_staker(day, indy)
+        day += datetime.timedelta(days=1)
+
+    df = summary.get_summary(rewards, False)
+
+    rewards_sorted_by_dex = df.sort_values(
+        by="Purpose", key=lambda col: col.apply(lambda x: x.rsplit(" ", 1)[-1])
+    )
+
+    _output(rewards_sorted_by_dex)
+
+
+@rewards.command()
 @indy_option(config.GOV_EPOCH_INDY)
 @pkh_option
 @outfile_option
