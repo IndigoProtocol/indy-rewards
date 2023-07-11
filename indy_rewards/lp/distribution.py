@@ -1,3 +1,4 @@
+import copy
 import datetime
 
 from .. import analytics_api, time_utils
@@ -5,6 +6,7 @@ from ..models import (
     IAsset,
     IAssetReward,
     IndividualReward,
+    LiquidityPool,
     LiquidityPoolReward,
     LiquidityPoolStatus,
 )
@@ -68,6 +70,7 @@ def distribute_to_accounts(
         iassets_daily_rewards, lp_daily_status, day
     )
     staker_info = analytics_api.get_account_staked_lp_tokens(day)
+    staker_info = _adjust_stakes_for_grace_period(day, staker_info)
 
     individual_rewards = []
     for pr in pool_rewards:
@@ -164,3 +167,27 @@ def _calculate_k(
     }
 
     return k_values
+
+
+def _adjust_stakes_for_grace_period(
+    day: datetime.date,
+    pkh_staked_lp_tokens: dict[LiquidityPool, dict[str, float]],
+) -> dict[LiquidityPool, dict[str, float]]:
+    if day not in (datetime.date(2023, 7, 3), datetime.date(2023, 7, 4)):
+        return pkh_staked_lp_tokens
+
+    grace_start_staked = analytics_api.get_account_staked_lp_tokens(
+        datetime.date(2023, 7, 2)
+    )
+    adjusted_stakes = copy.deepcopy(pkh_staked_lp_tokens)
+
+    lps = set(grace_start_staked.keys())
+    if lps != set(pkh_staked_lp_tokens.keys()):
+        raise Exception("LP set mismatch in grace period adjustment inputs.")
+
+    for lp in lps:
+        for pkh, grace_stake in grace_start_staked[lp].items():
+            if pkh not in adjusted_stakes[lp] or grace_stake > adjusted_stakes[lp][pkh]:
+                adjusted_stakes[lp][pkh] = grace_stake
+
+    return adjusted_stakes
