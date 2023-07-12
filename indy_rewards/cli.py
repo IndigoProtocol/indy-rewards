@@ -422,10 +422,16 @@ def _print_dex_rewards_grouped(rewards: list[LiquidityPoolReward]):
     for lp, indy in summed_rewards.items():
         dex_groups[lp.dex].append((lp, indy))
 
+    total_indy = sum(summed_rewards.values())
+
     for dex in sorted(dex_groups.keys(), key=lambda x: x.name):
         lp_totals = dex_groups[dex]
         lp_totals_sorted = sorted(lp_totals, key=lambda x: x[0].iasset.name)
         dex_total = sum(total for _, total in lp_totals_sorted)
         click.echo(f"\n{dex} (Total: {dex_total:.6f}):\n")
         for lp, indy in lp_totals_sorted:
-            click.echo(f"- {lp.dex} {lp.iasset}/{lp.other_asset_name}: {indy:.6f}")
+            percent = (indy / total_indy) * 100
+            click.echo(
+                f"- {lp.dex} {lp.iasset}/{lp.other_asset_name}: "
+                f"{indy:.6f} {percent:.1f}%"
+            )
