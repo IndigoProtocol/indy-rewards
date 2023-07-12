@@ -433,5 +433,5 @@ def _print_dex_rewards_grouped(rewards: list[LiquidityPoolReward]):
             percent = (indy / total_indy) * 100
             click.echo(
                 f"- {lp.dex} {lp.iasset}/{lp.other_asset_name}: "
-                f"{indy:.6f} {percent:.1f}%"
+                f"{indy:12.6f} {percent:5.1f}%"
             )
