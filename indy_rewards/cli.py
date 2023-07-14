@@ -418,7 +418,7 @@ def _sum_lp_rewards(rewards: list[LiquidityPoolReward]) -> dict[LiquidityPool, f
 def _print_dex_rewards_grouped(rewards: list[LiquidityPoolReward]):
     summed_rewards = _sum_lp_rewards(rewards)
 
-    dex_groups = defaultdict(list)
+    dex_groups: dict[Dex, list[tuple[LiquidityPool, float]]] = defaultdict(list)
     for lp, indy in summed_rewards.items():
         dex_groups[lp.dex].append((lp, indy))
 
