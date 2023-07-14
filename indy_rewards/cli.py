@@ -411,7 +411,7 @@ def _error_on_lp_moved_to_dex(epoch_or_date: int | datetime.date):
 def _sum_lp_rewards(rewards: list[LiquidityPoolReward]) -> dict[LiquidityPool, float]:
     indy_by_lp: dict[LiquidityPool, float] = defaultdict(float)
     for r in rewards:
-        indy_by_lp[r.lp] += r.indy
+        indy_by_lp[r.lp] += round(r.indy, 6)
     return indy_by_lp
 
 
