@@ -149,7 +149,7 @@ def lp_summary(indy: float, start_date: datetime.datetime, end_date: datetime.da
 
     delta = end - start
     total_days = delta.days + 1
-    click.echo(f"Number of days: {total_days}")
+    click.echo(f"Days: {total_days}")
 
     rewards: list[LiquidityPoolReward] = []
 
