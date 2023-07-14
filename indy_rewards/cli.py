@@ -408,10 +408,12 @@ def _error_on_lp_moved_to_dex(epoch_or_date: int | datetime.date):
         )
 
 
-def _sum_lp_rewards(rewards: list[LiquidityPoolReward]) -> dict[LiquidityPool, float]:
+def _sum_lp_rewards(
+    rewards: list[LiquidityPoolReward], rounded: bool = False
+) -> dict[LiquidityPool, float]:
     indy_by_lp: dict[LiquidityPool, float] = defaultdict(float)
     for r in rewards:
-        indy_by_lp[r.lp] += round(r.indy, 6)
+        indy_by_lp[r.lp] += round(r.indy, 6) if rounded else r.indy
     return indy_by_lp
 
 
@@ -423,7 +425,9 @@ def _print_dex_rewards_grouped(rewards: list[LiquidityPoolReward]):
         dex_groups[lp.dex].append((lp, indy))
 
     total_indy = sum(summed_rewards.values())
-    print(f"Total: {total_indy:.6f} INDY")
+    click.echo(
+        f"Total: {sum(_sum_lp_rewards(rewards, rounded=True).values()):.6f} INDY"
+    )
 
     for dex in sorted(dex_groups.keys(), key=lambda x: x.name):
         lp_totals = dex_groups[dex]
