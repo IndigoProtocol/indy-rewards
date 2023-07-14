@@ -423,6 +423,7 @@ def _print_dex_rewards_grouped(rewards: list[LiquidityPoolReward]):
         dex_groups[lp.dex].append((lp, indy))
 
     total_indy = sum(summed_rewards.values())
+    print(f"Total: {total_indy:.6f} INDY")
 
     for dex in sorted(dex_groups.keys(), key=lambda x: x.name):
         lp_totals = dex_groups[dex]
