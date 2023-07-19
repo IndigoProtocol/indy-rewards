@@ -12,7 +12,13 @@ from indy_rewards import lp as lp_module
 from indy_rewards import polygon_api
 from indy_rewards import sp as sp_module
 from indy_rewards import summary, time_utils, volatility
-from indy_rewards.models import Dex, IAsset, IndividualReward, LiquidityPool
+from indy_rewards.models import (
+    Dex,
+    IAsset,
+    IndividualReward,
+    LiquidityPool,
+    LiquidityPoolReward,
+)
 
 
 @click.group()
@@ -79,6 +85,7 @@ def validate_epoch_or_date_arg(ctx, param, value):
 @epoch_or_date_arg
 def lp(indy: float, pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
     """Print or save liquidity pool token staking rewards."""
+    _error_on_lp_moved_to_dex(epoch_or_date)
     if isinstance(epoch_or_date, int):
         rewards = lp_module.get_epoch_rewards_per_staker(epoch_or_date, indy)
     else:
@@ -104,6 +111,8 @@ def lp_apr(indy: float, epoch_or_date: int | datetime.date):
             for dex in dexes_sorted:
                 click.echo(f"{dex.name}: {aprs_by_iasset[iasset][dex] * 100:.2f}%")
 
+    _error_on_lp_moved_to_dex(epoch_or_date)
+
     if isinstance(epoch_or_date, int):
         epoch = epoch_or_date
         date = None
@@ -113,6 +122,43 @@ def lp_apr(indy: float, epoch_or_date: int | datetime.date):
 
     aprs = lp_module.get_epoch_aprs(epoch, indy, date)
     display_aprs(aprs)
+
+
+@rewards.command()
+@indy_option(config.LP_EPOCH_INDY)
+@click.argument(
+    "start_date", type=click.DateTime(formats=["%Y-%m-%d"]), metavar="START_DATE"
+)
+@click.argument(
+    "end_date", type=click.DateTime(formats=["%Y-%m-%d"]), metavar="END_DATE"
+)
+def lp_summary(indy: float, start_date: datetime.datetime, end_date: datetime.datetime):
+    """Print LP summaries between two dates.
+
+    START_DATE: Range start UTC date (inclusive), e.g. 2023-06-27.
+
+    END_DATE: Range end UTC date (inclusive).
+    """
+    start = start_date.date()
+    end = end_date.date()
+    _error_on_future(start)
+    _error_on_future(end)
+
+    if start > end:
+        raise click.BadArgumentUsage("Start date can't be after the end.")
+
+    delta = end - start
+    total_days = delta.days + 1
+    click.echo(f"Days: {total_days}")
+
+    rewards: list[LiquidityPoolReward] = []
+
+    day: datetime.date = start
+    while day <= end:
+        rewards += lp_module.get_pool_rewards(day, indy)
+        day += datetime.timedelta(days=1)
+
+    _print_dex_rewards_grouped(rewards)
 
 
 @rewards.command()
@@ -349,4 +395,48 @@ def _error_on_future(epoch_or_date: int | datetime.date):
                 f"Snapshot for the day isn't done yet. It's around:\n\n"
                 f"{get_snap_str(day)}\n\n"
                 "Plus up to 45 minutes until results appear on the API."
+            )
+
+
+def _error_on_lp_moved_to_dex(epoch_or_date: int | datetime.date):
+    if (isinstance(epoch_or_date, int) and epoch_or_date > 421) or (
+        isinstance(epoch_or_date, datetime.date)
+        and epoch_or_date > datetime.date(2023, 7, 4)
+    ):
+        raise click.BadArgumentUsage(
+            "LP reward distribution moved to dexes starting 2023 July 5th."
+        )
+
+
+def _sum_lp_rewards(
+    rewards: list[LiquidityPoolReward], rounded: bool = False
+) -> dict[LiquidityPool, float]:
+    indy_by_lp: dict[LiquidityPool, float] = defaultdict(float)
+    for r in rewards:
+        indy_by_lp[r.lp] += round(r.indy, 6) if rounded else r.indy
+    return indy_by_lp
+
+
+def _print_dex_rewards_grouped(rewards: list[LiquidityPoolReward]):
+    summed_rewards = _sum_lp_rewards(rewards)
+
+    dex_groups: dict[Dex, list[tuple[LiquidityPool, float]]] = defaultdict(list)
+    for lp, indy in summed_rewards.items():
+        dex_groups[lp.dex].append((lp, indy))
+
+    total_indy = sum(summed_rewards.values())
+    click.echo(
+        f"Total: {sum(_sum_lp_rewards(rewards, rounded=True).values()):.6f} INDY"
+    )
+
+    for dex in sorted(dex_groups.keys(), key=lambda x: x.name):
+        lp_totals = dex_groups[dex]
+        lp_totals_sorted = sorted(lp_totals, key=lambda x: x[0].iasset.name)
+        dex_total = sum(round(total, 6) for _, total in lp_totals_sorted)
+        click.echo(f"\n{dex} (Total: {dex_total:.6f}):\n")
+        for lp, indy in lp_totals_sorted:
+            percent = (indy / total_indy) * 100
+            click.echo(
+                f"- {lp.dex} {lp.iasset}/{lp.other_asset_name}: "
+                f"{indy:12.6f} {percent:5.1f}%"
             )
