@@ -1,5 +1,3 @@
-import datetime
-
 import pandas as pd
 
 from . import analytics_api, time_utils
@@ -16,15 +14,10 @@ def get_epoch_rewards_per_staker(
     df = pd.DataFrame(account_indy)
 
     total_staked_indy = df["staked_indy"].sum() / 1e6
+
     df["pkh_indy"] = df.groupby(["owner"])["staked_indy"].transform("sum") / 1e6
     df["pkh_account_count"] = df.groupby(["owner"])["owner"].transform("count")
-
-    if snap_date < datetime.date(2023, 5, 20):
-        df = df.drop_duplicates(subset=["owner"])
-    else:
-        duplicates = df[df.duplicated(subset="owner", keep=False)]
-        if not duplicates.empty:
-            raise Exception("Duplicate 'owner' rows in API response.")
+    df = df.drop_duplicates(subset=["owner"])
 
     df["reward"] = df.apply(
         lambda row: row["pkh_indy"] * epoch_indy / total_staked_indy, axis=1
