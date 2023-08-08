@@ -395,6 +395,9 @@ def rewards_staking(snapshot_unix_time: float) -> list[dict]:
     Returns:
         List of dicts, each dict containing a PKH and its reward-eligible INDY balance.
 
+        PKHs are not unique. There are multiple entries with the same PKH if the PKH has
+        multiple on-chain reward-eligible gov staking accounts.
+
         Dict structure:
 
         owner (str): PaymentKeyHash of the owner, in hex.
