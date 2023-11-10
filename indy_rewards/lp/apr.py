@@ -53,9 +53,9 @@ def get_lp_daily_apr(
 ) -> float:
     """Calculates the INDY-based LP APR for a given day and LP.
 
-    Loosely based on this LP token staking formula, but returns APRs per
-    liquidity pool (more granular) APRs, rather than per iAsset
-    (liquidity pools for the same iAsset lumped together and averaged):
+    Loosely based on this LP token staking formula, but returns APRs per liquidity pool
+    (more granular) APRs, rather than per iAsset (liquidity pools for the same iAsset
+    lumped together and averaged):
     https://docs.indigoprotocol.io/resources/protocol-statistics/apr-apy-calculations
 
     Different liquidity pools of the same iAsset can have different APRs, depending on

@@ -291,8 +291,7 @@ def _pro_rata_distribute(
     day: datetime.date,
     comment: str,
 ) -> list[IndividualReward]:
-    """Distributes INDY to accounts proportional to their individual shares,
-    weights.
+    """Distributes INDY to accounts proportional to their individual shares, weights.
 
     Args:
         indy_to_distribute: Total INDY to distribute. Human INDY units, not lovelaces.
@@ -328,8 +327,7 @@ def _get_unique_iassets(accounts: list[dict]) -> set[IAsset]:
 
 
 def _is_at_least_24h_old(account: dict, snapshot_day: datetime.date) -> bool:
-    """Returns whether the SP account was opened within 24h relative to the
-    snapshot."""
+    """Returns whether the SP account was opened within 24h relative to the snapshot."""
     snap = time_utils.get_snapshot_time(snapshot_day)
     open = datetime.datetime.utcfromtimestamp(account["opened_at"]).replace(
         tzinfo=datetime.timezone.utc

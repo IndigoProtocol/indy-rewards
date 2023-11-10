@@ -182,8 +182,8 @@ def _get_first_missing_date(
 def _is_unfinished_day(day: datetime.date) -> bool:
     """Check if 'day' (a UTC date) has passed yet.
 
-    E.g. day 2023-03-29 is considered finished if it's currently
-    2023-03-30 00:00 UTC or later.
+    E.g. day 2023-03-29 is considered finished if it's currently 2023-03-30 00:00 UTC or
+    later.
     """
     today_date = datetime.datetime.utcnow().date()
     return day >= today_date

@@ -64,9 +64,9 @@ def _get_daily_usd_prices(asset_id: int) -> dict[datetime.date, float]:
 def _get_chart_data(asset_id: int) -> dict:
     """Return daily opening prices and volumes for an asset.
 
-    Uses an undocumented Coingecko API, which seems more efficient and
-    easy than the official API. Gets years' worth of daily prices (and
-    volumes) in a single HTTP request.
+    Uses an undocumented Coingecko API, which seems more efficient and easy than the
+    official API. Gets years' worth of daily prices (and volumes) in a single HTTP
+    request.
     """
     req = urllib.request.Request(
         f"https://www.coingecko.com/price_charts/{asset_id}/usd/max.json",

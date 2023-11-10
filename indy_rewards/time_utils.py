@@ -16,8 +16,7 @@ def get_snapshot_unix_time(day: datetime.date) -> float:
 def date_to_epoch(date: datetime.date) -> int:
     """Get the epoch that 'date' is in.
 
-    For epoch transition dates, it returns the epoch before the
-    transition.
+    For epoch transition dates, it returns the epoch before the transition.
     """
     days_diff = (date - _ref_date).days - 1
     epoch = days_diff // 5
