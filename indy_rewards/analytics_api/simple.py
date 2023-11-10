@@ -233,7 +233,8 @@ def get_lp_token_circulating_supplies(day: datetime.date) -> dict[str, int]:
 
 
 def _fetch_lp_statuses(day: datetime.date) -> list[dict]:
-    """Fetches LP status snapshots from Indigo Analytics /liquidity-pools/locked-asset.
+    """Fetches LP status snapshots from Indigo Analytics /liquidity-
+    pools/locked-asset.
 
     Only returns LP pairs that were at some point whitelisted on Indigo.
 
@@ -393,7 +394,8 @@ def _get_lp_for_token(token: str, lps: list[LiquidityPool]) -> LiquidityPool:
 def _get_entries_for_day(
     func: Callable[[float], list[dict]], day: datetime.date
 ) -> list[dict]:
-    """Filter API responses where the API doesn't provide an upper time limit."""
+    """Filter API responses where the API doesn't provide an upper time
+    limit."""
     timestamp = time_utils.get_snapshot_unix_time(day)
     with_future = func(timestamp)
     day_only = [x for x in with_future if x["timestamp"] < timestamp + 20 * 3600]

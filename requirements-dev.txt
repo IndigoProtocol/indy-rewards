@@ -1,5 +1,5 @@
 black == 23.*
-docformatter[tomli] == 1.*
+docformatter[tomli] == 1.7.2
 flake8 == 6.0.0
 isort == 5.*
 mypy == 1.*

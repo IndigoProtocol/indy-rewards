@@ -104,7 +104,8 @@ def cdps(at_unix_time: Optional[float]) -> list[dict]:
 
 
 def liquidity_pools():
-    """Dex liquidity pool attributes of pools whitelisted on Indigo for INDY LP rewards.
+    """Dex liquidity pool attributes of pools whitelisted on Indigo for INDY LP
+    rewards.
 
     Returns:
         List of dicts, each representing a liquidity pool. Dict structure:
@@ -385,7 +386,8 @@ def rewards_stability_pool(snapshot_unix_time: float) -> list[dict]:
 
 
 def rewards_staking(snapshot_unix_time: float) -> list[dict]:
-    """Reward-eligible INDY that each governance account has staked at a given time.
+    """Reward-eligible INDY that each governance account has staked at a given
+    time.
 
     Args:
         snapshot_unix_time: Unix time (in seconds) to get eligible INDY balances for.
