@@ -233,7 +233,7 @@ def get_lp_token_circulating_supplies(day: datetime.date) -> dict[str, int]:
 
 
 def _fetch_lp_statuses(day: datetime.date) -> list[dict]:
-    """Fetches LP status snapshots from Indigo Analytics /liquidity- pools/locked-asset.
+    """Fetches LP status snapshots from Indigo Analytics /liquidity-pools/locked-asset.
 
     Only returns LP pairs that were at some point whitelisted on Indigo.
 

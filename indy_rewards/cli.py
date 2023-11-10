@@ -419,7 +419,7 @@ def _error_on_future(epoch_or_date: int | datetime.date):
             raise click.BadArgumentUsage(
                 f"Snapshot for the day isn't done yet. It's around:\n\n"
                 f"{get_snap_str(day)}\n\n"
-                "Plus up to 45 minutes until  results appear on the API."
+                "Plus up to 45 minutes until results appear on the API."
             )
 
 
