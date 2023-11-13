@@ -1,6 +1,6 @@
 black == 23.*
-docformatter[tomli] == 1.*
-flake8 == 6.*
+docformatter[tomli] == 1.7.5
+flake8 == 6.1.0
 isort == 5.*
 mypy == 1.*
 pandas-stubs == 2.0.*

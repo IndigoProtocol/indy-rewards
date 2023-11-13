@@ -4,7 +4,6 @@ from typing import Final
 from .models import IAsset
 from .time_utils import date_to_epoch
 
-SP_EPOCH_INDY: Final[int] = 28768
 LP_EPOCH_INDY: Final[int] = 4795
 GOV_EPOCH_INDY: Final[int] = 2398
 

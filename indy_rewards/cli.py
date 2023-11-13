@@ -19,6 +19,7 @@ from indy_rewards.models import (
     LiquidityPool,
     LiquidityPoolReward,
 )
+from indy_rewards.sp.distribution import sp_epoch_emission
 
 
 @click.group()
@@ -43,6 +44,19 @@ def indy_option(indy_amount: int, name="--indy", help="INDY to distribute per ep
         return click.option(
             name,
             default=indy_amount,
+            type=click.FLOAT,
+            help=help,
+            show_default=True,
+        )(function)
+
+    return decorator
+
+
+def sp_indy_option(name="--indy", help="INDY to distribute per epoch."):
+    def decorator(function: Callable):
+        return click.option(
+            name,
+            default=-1,
             type=click.FLOAT,
             help=help,
             show_default=True,
@@ -178,7 +192,7 @@ def gov(indy: float, pkh: tuple[str], outfile: str, epoch: int):
 
 
 @rewards.command()
-@indy_option(config.SP_EPOCH_INDY)
+@sp_indy_option()
 @pkh_option
 @outfile_option
 @epoch_or_date_arg
@@ -191,22 +205,30 @@ def sp(
     """Print or save stability pool staking rewards."""
     _load_polygon_api_key_or_fail(epoch_or_date)
     if isinstance(epoch_or_date, int):
+        if indy == -1:
+            indy = sp_epoch_emission(epoch_or_date)
         rewards = sp_module.get_epoch_rewards_per_staker(epoch_or_date, indy)
     else:
+        if indy == -1:
+            indy = sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date))
         rewards = sp_module.get_rewards_per_staker(epoch_or_date, indy)
     rewards = _pkh_filter(rewards, pkh)
     _output(rewards, outfile)
 
 
 @rewards.command()
-@indy_option(config.SP_EPOCH_INDY)
+@sp_indy_option()
 @epoch_or_date_arg
 def sp_apr(indy: float, epoch_or_date: int | datetime.date):
     """Print SP staking INDY-based APRs."""
 
     if isinstance(epoch_or_date, int):
+        if indy == -1:
+            indy = sp_epoch_emission(epoch_or_date)
         aprs = sp_module.get_epoch_aprs(epoch_or_date, indy)
     else:
+        if indy == -1:
+            indy = sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date))
         aprs = sp_module.get_daily_aprs(epoch_or_date, indy)
 
     sps = sorted(aprs.keys(), key=lambda x: x.iasset.name)
@@ -225,14 +247,14 @@ def all(pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
     if isinstance(epoch_or_date, int):
         rewards = summary.get_epoch_all_rewards(
             epoch_or_date,
-            config.SP_EPOCH_INDY,
+            sp_epoch_emission(epoch_or_date),
             config.LP_EPOCH_INDY,
             config.GOV_EPOCH_INDY,
         )
     else:
         rewards = summary.get_day_all_rewards(
             epoch_or_date,
-            config.SP_EPOCH_INDY,
+            sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
             config.LP_EPOCH_INDY,
             config.GOV_EPOCH_INDY,
         )
@@ -242,8 +264,7 @@ def all(pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
 
 
 @rewards.command(name="summary")
-@indy_option(
-    config.SP_EPOCH_INDY,
+@sp_indy_option(
     "--sp-indy",
     "INDY to distribute to stability pool stakers per epoch.",
 )
@@ -270,6 +291,8 @@ def summary_command(
     _load_polygon_api_key_or_fail(epoch_or_date)
 
     if isinstance(epoch_or_date, int):
+        if sp_indy == -1:
+            sp_indy = sp_epoch_emission(epoch_or_date)
         epoch_rewards = summary.get_epoch_all_rewards(
             epoch_or_date,
             sp_indy,
@@ -279,6 +302,8 @@ def summary_command(
         epoch_rewards = _pkh_filter(epoch_rewards, pkh)
         sum_table = summary.get_summary(epoch_rewards)
     else:
+        if sp_indy == -1:
+            sp_indy = sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date))
         day_rewards = summary.get_day_all_rewards(
             epoch_or_date, sp_indy, lp_indy, gov_indy
         )
