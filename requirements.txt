@@ -1,5 +1,5 @@
 click  == 8.*
-pandas == 2.0.*
+pandas == 2.1.*
 requests == 2.*
 python-dotenv == 1.*
 jsonschema == 4.*
