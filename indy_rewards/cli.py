@@ -19,7 +19,7 @@ from indy_rewards.models import (
     LiquidityPool,
     LiquidityPoolReward,
 )
-from indy_rewards.sp.distribution import sp_epoch_emission
+from indy_rewards.sp.distribution import gov_epoch_emission, sp_epoch_emission
 
 
 @click.group()
@@ -44,6 +44,19 @@ def indy_option(indy_amount: int, name="--indy", help="INDY to distribute per ep
         return click.option(
             name,
             default=indy_amount,
+            type=click.FLOAT,
+            help=help,
+            show_default=True,
+        )(function)
+
+    return decorator
+
+
+def gov_indy_option(name="--indy", help="INDY to distribute per epoch."):
+    def decorator(function: Callable):
+        return click.option(
+            name,
+            default=-1,
             type=click.FLOAT,
             help=help,
             show_default=True,
@@ -176,7 +189,7 @@ def lp_summary(indy: float, start_date: datetime.datetime, end_date: datetime.da
 
 
 @rewards.command()
-@indy_option(config.GOV_EPOCH_INDY)
+@gov_indy_option()
 @pkh_option
 @outfile_option
 @click.argument("epoch", type=int)
@@ -186,6 +199,8 @@ def gov(indy: float, pkh: tuple[str], outfile: str, epoch: int):
     EPOCH: Epoch to get rewards for. Technically it's the epoch end snapshot that
     counts.
     """
+    if indy == -1:
+        indy = gov_epoch_emission(epoch)
     rewards = gov_module.get_epoch_rewards_per_staker(epoch, indy)
     rewards = _pkh_filter(rewards, pkh)
     _output(rewards, outfile)
@@ -249,14 +264,14 @@ def all(pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
             epoch_or_date,
             sp_epoch_emission(epoch_or_date),
             config.LP_EPOCH_INDY,
-            config.GOV_EPOCH_INDY,
+            gov_epoch_emission(epoch_or_date),
         )
     else:
         rewards = summary.get_day_all_rewards(
             epoch_or_date,
             sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
             config.LP_EPOCH_INDY,
-            config.GOV_EPOCH_INDY,
+            gov_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
         )
 
     rewards = _pkh_filter(rewards, pkh)
@@ -273,8 +288,7 @@ def all(pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
     "--lp-indy",
     "INDY to distribute to LP token stakers per epoch.",
 )
-@indy_option(
-    config.GOV_EPOCH_INDY,
+@gov_indy_option(
     "--gov-indy",
     "INDY to distribute to INDY governance stakers per epoch.",
 )
@@ -293,6 +307,8 @@ def summary_command(
     if isinstance(epoch_or_date, int):
         if sp_indy == -1:
             sp_indy = sp_epoch_emission(epoch_or_date)
+        if gov_indy == -1:
+            gov_indy = gov_epoch_emission(epoch_or_date)
         epoch_rewards = summary.get_epoch_all_rewards(
             epoch_or_date,
             sp_indy,
@@ -304,6 +320,8 @@ def summary_command(
     else:
         if sp_indy == -1:
             sp_indy = sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date))
+        if gov_indy == -1:
+            gov_indy = gov_epoch_emission(time_utils.date_to_epoch(epoch_or_date))
         day_rewards = summary.get_day_all_rewards(
             epoch_or_date, sp_indy, lp_indy, gov_indy
         )

@@ -340,3 +340,13 @@ def sp_epoch_emission(epoch: int) -> float:
         return 22431
 
     return 28768
+
+
+def gov_epoch_emission(epoch: int) -> float:
+    if epoch >= 524:
+        return 5315
+
+    if epoch >= 488:
+        return 6046.11
+
+    return 2398
