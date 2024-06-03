@@ -5,7 +5,6 @@ from .models import IAsset
 from .time_utils import date_to_epoch
 
 LP_EPOCH_INDY: Final[int] = 4795
-GOV_EPOCH_INDY: Final[int] = 2398
 
 IASSET_LAUNCH_DATES = {
     IAsset.iUSD: datetime.date(2022, 11, 21),  # Epoch 377's first day.
