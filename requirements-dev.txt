@@ -10,5 +10,5 @@ pytest == 7.*
 pytest-cov == 4.*
 requests-mock == 1.*
 types-requests == 2.*
-types-setuptools == 68.*
+types-setuptools == 70.*
 types-jsonschema == 4.*
