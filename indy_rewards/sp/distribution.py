@@ -89,6 +89,13 @@ def get_pool_weights(
             IAsset.from_str("iusd"): (15574 / 22431),
         }
 
+    if day >= datetime.date(2024, 7, 18):
+        return {
+            IAsset.from_str("ibtc"): (1504.89 / 18664.35),
+            IAsset.from_str("ieth"): (2469.29 / 18664.35),
+            IAsset.from_str("iusd"): (14690.17 / 18664.35),
+        }
+
     return get_pool_weights_before_epoch_448(
         saturations, market_caps, day, new_iassets, has_stakers
     )
@@ -338,6 +345,9 @@ def _is_at_least_24h_old(account: dict, snapshot_day: datetime.date) -> bool:
 def sp_epoch_emission(epoch: int) -> float:
     if epoch >= 447:
         return 22431
+
+    if epoch >= 498:
+        return 18664.35
 
     return 28768
 
