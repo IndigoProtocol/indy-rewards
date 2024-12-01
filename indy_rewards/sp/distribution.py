@@ -82,6 +82,13 @@ def get_pool_weights(
     new_iassets: set[IAsset],
     has_stakers: set[IAsset],
 ) -> dict[IAsset, float]:
+    if day >= datetime.date(2024, 11, 26):
+        return {
+            IAsset.from_str("ibtc"): (2469.29 / 19664.35),
+            IAsset.from_str("ieth"): (1504.89 / 19664.35),
+            IAsset.from_str("iusd"): (14690.17 / 19664.35),
+            IAsset.from_str("isol"): (1000.00 / 19664.35),
+        }
     if day >= datetime.date(2024, 7, 14):
         return {
             IAsset.from_str("ibtc"): (2469.29 / 18664.35),
@@ -334,6 +341,11 @@ def _get_unique_iassets(accounts: list[dict]) -> set[IAsset]:
 
 
 def _is_at_least_24h_old(account: dict, snapshot_day: datetime.date) -> bool:
+    """Ignore iSOL accounts opened before 2024-11-27 (first day of asset
+    whitelisting)."""
+    if snapshot_day < datetime.date(2024, 11, 27) and account["asset"] == "iSOL":
+        return True
+
     """Returns whether the SP account was opened within 24h relative to the snapshot."""
     snap = time_utils.get_snapshot_time(snapshot_day)
     open = datetime.datetime.utcfromtimestamp(account["opened_at"]).replace(
@@ -343,6 +355,9 @@ def _is_at_least_24h_old(account: dict, snapshot_day: datetime.date) -> bool:
 
 
 def sp_epoch_emission(epoch: int) -> float:
+    if epoch >= 524:
+        return 19664.35
+
     if epoch >= 497:
         return 18664.35
 
@@ -353,9 +368,6 @@ def sp_epoch_emission(epoch: int) -> float:
 
 
 def gov_epoch_emission(epoch: int) -> float:
-    if epoch >= 524:
-        return 5315
-
     if epoch >= 488:
         return 6046.11
 

@@ -10,6 +10,7 @@ IASSET_LAUNCH_DATES = {
     IAsset.iUSD: datetime.date(2022, 11, 21),  # Epoch 377's first day.
     IAsset.iBTC: datetime.date(2022, 11, 21),
     IAsset.iETH: datetime.date(2023, 1, 6),  # Epoch 386's second day.
+    IAsset.iSOL: datetime.date(2024, 11, 26),  # Epoch 525's second day.
 }
 
 
