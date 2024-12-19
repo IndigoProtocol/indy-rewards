@@ -377,6 +377,9 @@ def sp_epoch_emission(epoch: int) -> float:
 
 
 def gov_epoch_emission(epoch: int) -> float:
+    if epoch >= 529:
+        return 5046.33
+
     if epoch >= 488:
         return 6046.11
 
