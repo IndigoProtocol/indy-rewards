@@ -82,6 +82,13 @@ def get_pool_weights(
     new_iassets: set[IAsset],
     has_stakers: set[IAsset],
 ) -> dict[IAsset, float]:
+    if day >= datetime.date(2025, 1, 30):
+        return {
+            IAsset.from_str("ibtc"): (2884.952 / 16951.816),
+            IAsset.from_str("ieth"): (491.528 / 16951.816),
+            IAsset.from_str("iusd"): (12325.336 / 16951.816),
+            IAsset.from_str("isol"): (800.00 / 16951.816),
+        }
     if day >= datetime.date(2024, 12, 5):
         return {
             IAsset.from_str("ibtc"): (3606.19 / 21189.77),
@@ -362,8 +369,12 @@ def _is_at_least_24h_old(account: dict, snapshot_day: datetime.date) -> bool:
 
 
 def sp_epoch_emission(epoch: int) -> float:
+    if epoch >= 537:
+        return 16951.816
+    
     if epoch >= 526:
         return 21189.77
+    
     if epoch >= 524:
         return 19664.35
 
