@@ -1,4 +1,4 @@
-black == 23.*
+black == 24.*
 docformatter[tomli] == 1.7.5
 flake8 == 6.1.0
 isort == 5.*
