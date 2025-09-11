@@ -84,10 +84,10 @@ def get_pool_weights(
 ) -> dict[IAsset, float]:
     if day >= datetime.date(2025, 9, 7):
         return {
-            IAsset.from_str("ibtc"): (1200.0 / 9590.0),
-            IAsset.from_str("ieth"): (500.0 / 9590.0),
-            IAsset.from_str("iusd"): (4850.0 / 9590.0),
-            IAsset.from_str("isol"): (40.0 / 9590.0),
+            IAsset.from_str("ibtc"): (1200.0 / 6590.0),
+            IAsset.from_str("ieth"): (500.0 / 6590.0),
+            IAsset.from_str("iusd"): (4850.0 / 6590.0),
+            IAsset.from_str("isol"): (40.0 / 6590.0),
         }
     if day >= datetime.date(2025, 7, 29):
         return {
