@@ -6,6 +6,13 @@ from .time_utils import date_to_epoch
 
 LP_EPOCH_INDY: Final[int] = 4795
 
+ROB_EPOCH_INDY: dict[IAsset, float] = {
+    IAsset.iUSD: 500.0,
+    IAsset.iBTC: 0.0,
+    IAsset.iETH: 0.0,
+    IAsset.iSOL: 0.0,
+}
+
 IASSET_LAUNCH_DATES = {
     IAsset.iUSD: datetime.date(2022, 11, 21),  # Epoch 377's first day.
     IAsset.iBTC: datetime.date(2022, 11, 21),

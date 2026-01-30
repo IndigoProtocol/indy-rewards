@@ -2,8 +2,8 @@ import datetime
 
 import pandas as pd
 
-from . import gov, lp, sp, time_utils
-from .models import IndividualReward
+from . import config, gov, lp, rob, sp, time_utils
+from .models import IAsset, IndividualReward
 
 
 def get_epoch_all_rewards(
@@ -11,14 +11,17 @@ def get_epoch_all_rewards(
     sp_indy: float,
     lp_indy: float,
     gov_indy: float,
+    rob_indy: dict[IAsset, float] | None = None,
 ) -> list[IndividualReward]:
-    """Returns list of SP, LP and gov INDY rewards for accounts for an epoch.
+    """Returns list of SP, LP, gov and ROB INDY rewards for accounts for an epoch.
 
     Args:
         epoch: Epoch to calculate rewards for.
         sp_indy: INDY amount to distribute to SP stakers. E.g. 28768.
         lp_indy: INDY to distribute to LP stakers.
         gov_indy: INDY to distribute to INDY governance stakers.
+        rob_indy: INDY amounts per iAsset to distribute to ROB position holders.
+            If None, uses config.ROB_EPOCH_INDY.
 
     Returns:
         Pandas DataFrame with columns:
@@ -31,10 +34,14 @@ def get_epoch_all_rewards(
         - Expiration: Date and time after which this reward is no longer claimable,
             e.g. 2023-06-20 21:45.
     """
+    if rob_indy is None:
+        rob_indy = config.ROB_EPOCH_INDY
+
     gov_rewards = gov.get_epoch_rewards_per_staker(epoch, gov_indy)
     sp_rewards = sp.get_epoch_rewards_per_staker(epoch, sp_indy)
+    rob_rewards = rob.get_epoch_rewards_per_staker(epoch, rob_indy)
 
-    all_rewards = sp_rewards + gov_rewards
+    all_rewards = sp_rewards + gov_rewards + rob_rewards
 
     if epoch < 422:
         all_rewards += lp.get_epoch_rewards_per_staker(epoch, lp_indy)
@@ -47,13 +54,18 @@ def get_day_all_rewards(
     sp_indy_per_epoch: float,
     lp_indy_per_epoch: float,
     gov_indy_per_epoch: float,
+    rob_indy: dict[IAsset, float] | None = None,
 ) -> list[IndividualReward]:
+    if rob_indy is None:
+        rob_indy = config.ROB_EPOCH_INDY
+
     rewards = []
 
     epoch = time_utils.date_to_epoch(day)
     epoch_end_date = time_utils.get_epoch_end_date(epoch)
     if epoch_end_date == day:
         rewards += gov.get_epoch_rewards_per_staker(epoch, gov_indy_per_epoch)
+        rewards += rob.get_epoch_rewards_per_staker(epoch, rob_indy)
 
     rewards += sp.get_rewards_per_staker(day, sp_indy_per_epoch)
     if day <= datetime.date(2023, 7, 4):
@@ -127,5 +139,7 @@ def _split_purpose(purpose: str) -> tuple[str, ...] | tuple[str, None]:
         return ("LP reward", split[3] + " on " + split[-1])
     elif purpose.startswith("SP reward for "):
         return ("SP reward", purpose.removeprefix("SP reward for "))
+    elif purpose.startswith("ROB reward for "):
+        return ("ROB reward", purpose.removeprefix("ROB reward for "))
     else:
         return (purpose, None)

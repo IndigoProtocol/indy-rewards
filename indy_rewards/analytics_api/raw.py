@@ -5,6 +5,7 @@ from typing import Optional
 import requests
 
 BASE_URL = "https://analytics.indigoprotocol.io/api"
+BASE_URL_V1 = "https://analytics.indigoprotocol.io/api/v1"
 TIMEOUT = 20  # Seconds.
 
 
@@ -424,6 +425,40 @@ def rewards_staking(snapshot_unix_time: float) -> list[dict]:
     response = requests.get(
         BASE_URL + "/rewards/staking",
         params={"timestamp": snapshot_unix_time},
+        timeout=TIMEOUT,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def redemption_orders(
+    at_unix_time: float, in_range: bool = True
+) -> list[dict]:
+    """Redemption orderbook positions at a given time.
+
+    Args:
+        at_unix_time: Unix time (in seconds) for the snapshot.
+        in_range: If True, only return orders that are "in range".
+
+    Returns:
+        List of dicts, each representing a redemption order position.
+
+        Dict structure (at minimum):
+
+        owner (str): PaymentKeyHash of the owner, in hex.
+        lovelaceAmount (int): Amount in lovelaces for the position.
+
+    Examples:
+        >>> orders = redemption_orders(1737752700)
+        >>> orders[0]
+        {'owner': '...', 'lovelaceAmount': 123456789, ...}
+    """
+    params: dict[str, float | str] = {"timestamp": at_unix_time}
+    if in_range:
+        params["in_range"] = "true"
+    response = requests.get(
+        BASE_URL_V1 + "/rewards/redemption-orders",
+        params=params,
         timeout=TIMEOUT,
     )
     response.raise_for_status()
