@@ -6,7 +6,9 @@ For each period, INDY is distributed pro-rata based on each owner's share
 of total lovelaceAmount across all in-range positions.
 """
 
+import sys
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from .. import analytics_api, time_utils
 from ..models import IAsset, IndividualReward
@@ -14,6 +16,7 @@ from ..models import IAsset, IndividualReward
 
 NUM_PERIODS = 480
 PERIOD_SECONDS = 900  # 15 minutes
+MAX_WORKERS = 20
 
 
 def get_epoch_rewards_per_staker(
@@ -56,10 +59,17 @@ def get_epoch_rewards_per_staker(
     return rewards
 
 
+def _fetch_orders(timestamp: float) -> list[dict]:
+    """Fetch redemption orders for a single timestamp."""
+    return analytics_api.raw.redemption_orders(timestamp, in_range=True)
+
+
 def _distribute_across_periods(
     epoch_start_unix: float, epoch_indy: float
 ) -> dict[str, float]:
     """Distribute INDY across 480 periods and aggregate by owner.
+
+    Fetches all 480 periods in parallel using a thread pool.
 
     Args:
         epoch_start_unix: Unix timestamp of epoch start (21:45 UTC).
@@ -71,25 +81,40 @@ def _distribute_across_periods(
     indy_per_period = epoch_indy / NUM_PERIODS
     owner_totals: dict[str, float] = defaultdict(float)
 
-    for i in range(NUM_PERIODS):
-        timestamp = epoch_start_unix + (i * PERIOD_SECONDS)
-        orders = analytics_api.raw.redemption_orders(timestamp, in_range=True)
+    timestamps = [
+        epoch_start_unix + (i * PERIOD_SECONDS) for i in range(NUM_PERIODS)
+    ]
 
-        # No in-range orders for a period
-        if not orders:
-            continue
+    completed = 0
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        future_to_ts = {
+            executor.submit(_fetch_orders, ts): ts for ts in timestamps
+        }
+        for future in as_completed(future_to_ts):
+            completed += 1
+            print(
+                f"\rFetching ROB periods: {completed}/{NUM_PERIODS}",
+                end="",
+                file=sys.stderr,
+                flush=True,
+            )
+            orders = future.result()
 
-        # Group by owner and sum lovelaceAmount - Multiple positions per owner
-        owner_amounts: dict[str, int] = defaultdict(int)
-        for order in orders:
-            owner_amounts[order["owner"]] += order["lovelaceAmount"]
+            if not orders:
+                continue
 
-        total_amount = sum(owner_amounts.values())
-        if total_amount == 0:
-            continue
+            # Group by owner and sum lovelaceAmount - Multiple positions per owner
+            owner_amounts: dict[str, int] = defaultdict(int)
+            for order in orders:
+                owner_amounts[order["owner"]] += order["lovelaceAmount"]
 
-        # Distribute pro-rata
-        for owner, amount in owner_amounts.items():
-            owner_totals[owner] += indy_per_period * amount / total_amount
+            total_amount = sum(owner_amounts.values())
+            if total_amount == 0:
+                continue
 
+            # Distribute pro-rata
+            for owner, amount in owner_amounts.items():
+                owner_totals[owner] += indy_per_period * amount / total_amount
+
+    print(file=sys.stderr)  # Newline after progress
     return dict(owner_totals)
