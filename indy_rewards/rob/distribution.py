@@ -42,7 +42,9 @@ def get_epoch_rewards_per_staker(
         if epoch_indy <= 0:
             continue
 
-        owner_totals = _distribute_across_periods(epoch_start_unix, epoch_indy)
+        owner_totals = _distribute_across_periods(
+            epoch_start_unix, epoch_indy, iasset.name
+        )
 
         for owner, total_indy in owner_totals.items():
             rewards.append(
@@ -64,7 +66,7 @@ def _fetch_orders(timestamp: float) -> list[dict]:
 
 
 def _distribute_across_periods(
-    epoch_start_unix: float, epoch_indy: float
+    epoch_start_unix: float, epoch_indy: float, asset_name: str
 ) -> dict[str, float]:
     """Distribute INDY across 480 periods and aggregate by owner.
 
@@ -73,6 +75,7 @@ def _distribute_across_periods(
     Args:
         epoch_start_unix: Unix timestamp of epoch start (21:45 UTC).
         epoch_indy: Total INDY to distribute for this iAsset this epoch.
+        asset_name: Only include orders matching this asset (e.g. "iUSD").
 
     Returns:
         Dict mapping owner PKH to total INDY earned across all periods.
@@ -94,10 +97,11 @@ def _distribute_across_periods(
             if not orders:
                 continue
 
-            # Group by owner and sum lovelaceAmount - Multiple positions per owner
+            # Filter by asset and group by owner, summing lovelaceAmount
             owner_amounts: dict[str, int] = defaultdict(int)
             for order in orders:
-                owner_amounts[order["owner"]] += order["lovelaceAmount"]
+                if order["asset"] == asset_name:
+                    owner_amounts[order["owner"]] += order["lovelaceAmount"]
 
             total_amount = sum(owner_amounts.values())
             if total_amount == 0:
