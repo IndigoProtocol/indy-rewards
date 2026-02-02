@@ -217,7 +217,7 @@ def rob(pkh: tuple[str], outfile: str, epoch: int):
     EPOCH: Epoch to get rewards for.
     """
     _error_on_future(epoch)
-    rewards = rob_module.get_epoch_rewards_per_staker(epoch, config.ROB_EPOCH_INDY)
+    rewards = rob_module.get_epoch_rewards_per_staker(epoch, config.rob_epoch_emission(epoch))
     rewards = _pkh_filter(rewards, pkh)
     _output(rewards, outfile)
 
@@ -281,15 +281,16 @@ def all(pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
             sp_epoch_emission(epoch_or_date),
             config.LP_EPOCH_INDY,
             gov_epoch_emission(epoch_or_date),
-            config.ROB_EPOCH_INDY,
+            config.rob_epoch_emission(epoch_or_date),
         )
     else:
+        _epoch = time_utils.date_to_epoch(epoch_or_date)
         rewards = summary.get_day_all_rewards(
             epoch_or_date,
-            sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
+            sp_epoch_emission(_epoch),
             config.LP_EPOCH_INDY,
-            gov_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
-            config.ROB_EPOCH_INDY,
+            gov_epoch_emission(_epoch),
+            config.rob_epoch_emission(_epoch),
         )
 
     rewards = _pkh_filter(rewards, pkh)
@@ -332,7 +333,7 @@ def summary_command(
             sp_indy,
             lp_indy,
             gov_indy,
-            config.ROB_EPOCH_INDY,
+            config.rob_epoch_emission(epoch_or_date),
         )
         epoch_rewards = _pkh_filter(epoch_rewards, pkh)
         sum_table = summary.get_summary(epoch_rewards)
@@ -342,7 +343,11 @@ def summary_command(
         if gov_indy == -1:
             gov_indy = gov_epoch_emission(time_utils.date_to_epoch(epoch_or_date))
         day_rewards = summary.get_day_all_rewards(
-            epoch_or_date, sp_indy, lp_indy, gov_indy, config.ROB_EPOCH_INDY
+            epoch_or_date,
+            sp_indy,
+            lp_indy,
+            gov_indy,
+            config.rob_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
         )
         day_rewards = _pkh_filter(day_rewards, pkh)
         sum_table = summary.get_summary(day_rewards)

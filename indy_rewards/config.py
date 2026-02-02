@@ -13,6 +13,13 @@ ROB_EPOCH_INDY: dict[IAsset, float] = {
     IAsset.iSOL: 0.0,
 }
 
+
+def rob_epoch_emission(epoch: int) -> dict[IAsset, float]:
+    """Get ROB INDY emission amounts per iAsset for a given epoch."""
+    if epoch >= 608:
+        return ROB_EPOCH_INDY
+    return {}
+
 IASSET_LAUNCH_DATES = {
     IAsset.iUSD: datetime.date(2022, 11, 21),  # Epoch 377's first day.
     IAsset.iBTC: datetime.date(2022, 11, 21),

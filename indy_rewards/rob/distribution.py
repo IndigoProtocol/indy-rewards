@@ -6,7 +6,6 @@ For each period, INDY is distributed pro-rata based on each owner's share
 of total lovelaceAmount across all in-range positions.
 """
 
-import sys
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -85,19 +84,11 @@ def _distribute_across_periods(
         epoch_start_unix + (i * PERIOD_SECONDS) for i in range(NUM_PERIODS)
     ]
 
-    completed = 0
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_ts = {
             executor.submit(_fetch_orders, ts): ts for ts in timestamps
         }
         for future in as_completed(future_to_ts):
-            completed += 1
-            print(
-                f"\rFetching ROB periods: {completed}/{NUM_PERIODS}",
-                end="",
-                file=sys.stderr,
-                flush=True,
-            )
             orders = future.result()
 
             if not orders:
@@ -116,5 +107,4 @@ def _distribute_across_periods(
             for owner, amount in owner_amounts.items():
                 owner_totals[owner] += indy_per_period * amount / total_amount
 
-    print(file=sys.stderr)  # Newline after progress
     return dict(owner_totals)

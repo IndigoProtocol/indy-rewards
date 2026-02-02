@@ -21,7 +21,7 @@ def get_epoch_all_rewards(
         lp_indy: INDY to distribute to LP stakers.
         gov_indy: INDY to distribute to INDY governance stakers.
         rob_indy: INDY amounts per iAsset to distribute to ROB position holders.
-            If None, uses config.ROB_EPOCH_INDY.
+            If None, uses config.rob_epoch_emission(epoch).
 
     Returns:
         Pandas DataFrame with columns:
@@ -35,7 +35,7 @@ def get_epoch_all_rewards(
             e.g. 2023-06-20 21:45.
     """
     if rob_indy is None:
-        rob_indy = config.ROB_EPOCH_INDY
+        rob_indy = config.rob_epoch_emission(epoch)
 
     gov_rewards = gov.get_epoch_rewards_per_staker(epoch, gov_indy)
     sp_rewards = sp.get_epoch_rewards_per_staker(epoch, sp_indy)
@@ -57,7 +57,7 @@ def get_day_all_rewards(
     rob_indy: dict[IAsset, float] | None = None,
 ) -> list[IndividualReward]:
     if rob_indy is None:
-        rob_indy = config.ROB_EPOCH_INDY
+        rob_indy = config.rob_epoch_emission(time_utils.date_to_epoch(day))
 
     rewards = []
 
