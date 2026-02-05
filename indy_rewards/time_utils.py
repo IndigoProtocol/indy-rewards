@@ -23,6 +23,11 @@ def date_to_epoch(date: datetime.date) -> int:
     return epoch
 
 
+def get_epoch_start_date(epoch: int) -> datetime.date:
+    """Get UTC date of the epoch's first block (= end of previous epoch)."""
+    return get_epoch_end_date(epoch - 1)
+
+
 def get_epoch_end_date(epoch: int) -> datetime.date:
     """Get UTC date of the epoch's last block."""
     days_from_ref = (epoch + 1) * 5

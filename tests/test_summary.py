@@ -180,6 +180,10 @@ def mock_summary_dependencies(mocker: pytest_mock.MockerFixture):
         "indy_rewards.summary.gov.get_epoch_rewards_per_staker",
         wraps=mocked_gov_distribution,
     )
+    mocker.patch(
+        "indy_rewards.summary.rob.get_epoch_rewards_per_staker",
+        return_value=[],
+    )
 
 
 def get_expiration(

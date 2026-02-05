@@ -10,6 +10,7 @@ from indy_rewards import config
 from indy_rewards import gov as gov_module
 from indy_rewards import lp as lp_module
 from indy_rewards import polygon_api
+from indy_rewards import rob as rob_module
 from indy_rewards import sp as sp_module
 from indy_rewards import summary, time_utils, volatility
 from indy_rewards.models import (
@@ -207,6 +208,21 @@ def gov(indy: float, pkh: tuple[str], outfile: str, epoch: int):
 
 
 @rewards.command()
+@pkh_option
+@outfile_option
+@click.argument("epoch", type=int)
+def rob(pkh: tuple[str], outfile: str, epoch: int):
+    """Print or save Redemption Orderbook (ROB) incentive rewards.
+
+    EPOCH: Epoch to get rewards for.
+    """
+    _error_on_future(epoch)
+    rewards = rob_module.get_epoch_rewards_per_staker(epoch, config.rob_epoch_emission(epoch))
+    rewards = _pkh_filter(rewards, pkh)
+    _output(rewards, outfile)
+
+
+@rewards.command()
 @sp_indy_option()
 @pkh_option
 @outfile_option
@@ -256,7 +272,7 @@ def sp_apr(indy: float, epoch_or_date: int | datetime.date):
 @outfile_option
 @epoch_or_date_arg
 def all(pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
-    """Print or save SP, LP and governance staking rewards."""
+    """Print or save SP, LP, governance and ROB staking rewards."""
     _load_polygon_api_key_or_fail(epoch_or_date)
 
     if isinstance(epoch_or_date, int):
@@ -265,13 +281,16 @@ def all(pkh: tuple[str], outfile: str, epoch_or_date: int | datetime.date):
             sp_epoch_emission(epoch_or_date),
             config.LP_EPOCH_INDY,
             gov_epoch_emission(epoch_or_date),
+            config.rob_epoch_emission(epoch_or_date),
         )
     else:
+        _epoch = time_utils.date_to_epoch(epoch_or_date)
         rewards = summary.get_day_all_rewards(
             epoch_or_date,
-            sp_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
+            sp_epoch_emission(_epoch),
             config.LP_EPOCH_INDY,
-            gov_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
+            gov_epoch_emission(_epoch),
+            config.rob_epoch_emission(_epoch),
         )
 
     rewards = _pkh_filter(rewards, pkh)
@@ -314,6 +333,7 @@ def summary_command(
             sp_indy,
             lp_indy,
             gov_indy,
+            config.rob_epoch_emission(epoch_or_date),
         )
         epoch_rewards = _pkh_filter(epoch_rewards, pkh)
         sum_table = summary.get_summary(epoch_rewards)
@@ -323,7 +343,11 @@ def summary_command(
         if gov_indy == -1:
             gov_indy = gov_epoch_emission(time_utils.date_to_epoch(epoch_or_date))
         day_rewards = summary.get_day_all_rewards(
-            epoch_or_date, sp_indy, lp_indy, gov_indy
+            epoch_or_date,
+            sp_indy,
+            lp_indy,
+            gov_indy,
+            config.rob_epoch_emission(time_utils.date_to_epoch(epoch_or_date)),
         )
         day_rewards = _pkh_filter(day_rewards, pkh)
         sum_table = summary.get_summary(day_rewards)

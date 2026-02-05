@@ -131,7 +131,7 @@ of the wallet's first address.
 <details>
 <summary>All rewards for all wallets</summary>
 
-Entire epoch. Daily SP, LP, governance rewards for 5 days:
+Entire epoch. Daily SP, LP, governance and ROB rewards:
 
 ```console
 $ indy-rewards all 414
@@ -200,6 +200,35 @@ $ indy-rewards gov 415
     416 5706ea516b1a0f350b6876b84e02317af4c8b886c74562d9d9cb1764 INDY staking reward 2023-06-04   0.038790 2023-09-02 21:45 2023-06-04 23:00
     416 13a1d9bb7849716bd993b520f975175ae1b6720fec18dab37435d095 INDY staking reward 2023-06-04   0.095708 2023-09-02 21:45 2023-06-04 23:00
     …
+```
+
+</details>
+
+<details>
+<summary>ROB (Redemption Orderbook) incentive rewards</summary>
+
+Rewards for Redemption Orderbook positions that are "in range" during an epoch.
+Each epoch is split into 480 periods of 15 minutes, and INDY is distributed
+pro-rata based on each owner's lovelaceAmount share per period.
+
+```console
+$ indy-rewards rob 608
+ Period                                                  Address              Purpose       Date     Amount       Expiration      AvailableAt
+    609 aada39748edc9f40ec53f879499a837f6badf180413fc03a7a345609 ROB reward for iUSD 2026-01-24   1.234567 2026-04-25 21:45 2026-01-24 23:00
+    609 6699280ab41b732e26e7d3cb02d57f61a76bc8e9a0ceccca4997b812 ROB reward for iUSD 2026-01-24   0.567890 2026-04-25 21:45 2026-01-24 23:00
+    …
+```
+
+PKH filter also works:
+
+```console
+$ indy-rewards rob --pkh aada 608
+```
+
+File output:
+
+```console
+$ indy-rewards rob --outfile rob-608.csv 608
 ```
 
 </details>
