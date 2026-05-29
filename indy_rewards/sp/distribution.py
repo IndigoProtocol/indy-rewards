@@ -88,6 +88,8 @@ def get_pool_weights(
             IAsset.from_str("ieth"): (250.0 / 8290.0),
             IAsset.from_str("iusd"): (6800.0 / 8290.0),
             IAsset.from_str("isol"): (40.0 / 8290.0),
+            IAsset.from_str("ieur"): (0),
+            IAsset.from_str("ijpy"): (0),
         }
     if day >= datetime.date(2025, 9, 7):
         return {

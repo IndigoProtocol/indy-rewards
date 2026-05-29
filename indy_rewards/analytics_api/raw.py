@@ -5,7 +5,7 @@ from typing import Optional
 import requests
 
 BASE_URL = "https://analytics.indigoprotocol.io/api"
-BASE_URL_V1 = "https://analytics.indigoprotocol.io/api/v1"
+BASE_URL_V3 = "https://analytics.indigoprotocol.io/api/v3"
 TIMEOUT = 20  # Seconds.
 
 
@@ -457,7 +457,7 @@ def redemption_orders(
     if in_range:
         params["in_range"] = "true"
     response = requests.get(
-        BASE_URL_V1 + "/rewards/redemption-orders",
+        BASE_URL_V3 + "/rewards/redemption-orders",
         params=params,
         timeout=TIMEOUT,
     )

@@ -11,6 +11,8 @@ ROB_EPOCH_INDY: dict[IAsset, float] = {
     IAsset.iBTC: 0.0,
     IAsset.iETH: 0.0,
     IAsset.iSOL: 0.0,
+    IAsset.iEUR: 0.0,
+    IAsset.iJPY: 0.0,
 }
 
 
@@ -25,6 +27,8 @@ IASSET_LAUNCH_DATES = {
     IAsset.iBTC: datetime.date(2022, 11, 21),
     IAsset.iETH: datetime.date(2023, 1, 6),  # Epoch 386's second day.
     IAsset.iSOL: datetime.date(2024, 11, 26),  # Epoch 525's second day.
+    IAsset.iEUR: datetime.date(2023, 6, 3),
+    IAsset.iJPY: datetime.date(2023, 6, 3),
 }
 
 

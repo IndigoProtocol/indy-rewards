@@ -20,6 +20,8 @@ class IAsset(Enum):
     iBTC = auto()
     iETH = auto()
     iSOL = auto()
+    iEUR = auto()
+    iJPY = auto()
 
     @classmethod
     def from_str(cls, name: str):

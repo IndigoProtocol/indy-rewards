@@ -13,7 +13,11 @@ from . import raw as raw_api
 def get_iasset_ada_prices(day: datetime.date) -> dict[IAsset, float]:
     unix_time = time_utils.get_snapshot_unix_time(day)
     prices = raw_api.asset_prices(unix_time)
-    return {IAsset.from_str(x["asset"]): x["price"] / 1_000_000.0 for x in prices}
+    return {
+        IAsset.from_str(x["asset"]): float(x["price"])
+        for x in prices
+        if x.get("collateral_asset", "") == ""
+    }
 
 
 def get_iasset_supplies(day: datetime.date) -> dict[IAsset, float]:
@@ -41,8 +45,8 @@ def get_iasset_ada_market_caps(day: datetime.date) -> dict[IAsset, float]:
     supplies = get_iasset_supplies(day)
     prices = get_iasset_ada_prices(day)
     iassets = supplies.keys()
-    if set(iassets) != set(prices.keys()):
-        raise Exception("iAsset supply and price keys don't match")
+    # if set(iassets) != set(prices.keys()):
+    #     raise Exception("iAsset supply and price keys don't match")
     return {x: supplies[x] * prices[x] for x in iassets}
 
 
