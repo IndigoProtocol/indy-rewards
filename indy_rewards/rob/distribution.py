@@ -15,7 +15,7 @@ from ..models import IAsset, IndividualReward
 
 NUM_PERIODS = 480
 PERIOD_SECONDS = 900  # 15 minutes
-MAX_WORKERS = 20
+MAX_WORKERS = 10
 
 
 def get_epoch_rewards_per_staker(
