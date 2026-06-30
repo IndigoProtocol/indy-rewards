@@ -25,9 +25,8 @@ def get_rewards_per_staker(
     iassets_with_stakers = _get_unique_iassets(eligible_accounts)
 
     rewards_per_pool = get_rewards_per_pool(day, epoch_indy, iassets_with_stakers)
-    rewarded_iassets = list(map(lambda x: x.iasset, rewards_per_pool))
+    rewarded_iassets = [pool_reward.iasset for pool_reward in rewards_per_pool]
 
-    _check_each_iasset_has_stakers(rewards_per_pool, eligible_accounts)
     _check_each_account_has_reward(rewarded_iassets, all_accounts)
 
     rewards = []
@@ -38,6 +37,8 @@ def get_rewards_per_staker(
             for x in eligible_accounts
             if IAsset.from_str(x["asset"]) == pool_reward.iasset
         }
+        if not iasset_accounts:
+            continue
         comment = f"SP reward for {pool_reward.iasset.name}"
         rewards += _pro_rata_distribute(pool_reward.indy, iasset_accounts, day, comment)
 
@@ -61,6 +62,7 @@ def get_rewards_per_pool(
     pool_weights = get_pool_weights(
         saturations, market_caps, day, new_iassets, iassets_with_stakers
     )
+    pool_weights = _zero_weights_without_stakers(pool_weights, iassets_with_stakers)
 
     daily_indy = epoch_indy / 5
     daily_pool_rewards = [
@@ -310,21 +312,17 @@ def _calculate_weight(
         raise Exception(f"Can't determine stability pool weight for {iasset.name}")
 
 
-def _check_each_iasset_has_stakers(
-    stability_pool_rewards: list[IAssetReward], account_balances: list[dict]
-) -> None:
-    for r in stability_pool_rewards:
-        if r.indy == 0:
-            continue
-        has_staker = False
-        for a in account_balances:
-            if a["asset"] == r.iasset.name:
-                has_staker = True
-        if not has_staker:
-            raise Exception(
-                f"{r.iasset.name} SP has {r.indy} INDY rewards, "
-                f"but doesn't have stakers."
-            )
+def _zero_weights_without_stakers(
+    weights: dict[IAsset, float], has_stakers: set[IAsset]
+) -> dict[IAsset, float]:
+    filtered = {
+        iasset: weight if iasset in has_stakers else 0.0
+        for iasset, weight in weights.items()
+    }
+    total = sum(filtered.values())
+    if total == 0:
+        return filtered
+    return {iasset: weight / total for iasset, weight in filtered.items()}
 
 
 def _merge_duplicate_accounts(account_balances: list[dict]) -> list[dict]:
